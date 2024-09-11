@@ -10,13 +10,12 @@ from openpyxl import load_workbook
 from typing import List
 
 
-report_file_relative_path = 'BANKNIFTY_historical_analysis.xlsx.xlsx'
+report_file_relative_path = 'BANKNIFTY_historical_analysis.xlsx'
 sheet_name = 'daily_fluctuation'
 min_row = 2
 max_row = 10000
 min_col = 1  # A
 max_col = 7  # G
-
 
 # output: {date -> [low, high]}
 def get_daily_candlesticks(kc: KiteConnect, from_date: date, to_date: date) -> dict:
@@ -108,31 +107,51 @@ def generate_reports(daily_candlesticks: dict, entry_prices: dict, from_date: da
     return reports
 
 
-def save_all_reports(reports: List[Report]):
+def clean_worksheet():
     full_path = os.getcwd() + '/' + report_file_relative_path
     wb = load_workbook(full_path)
     ws = wb[sheet_name]
 
-    # IMPORTANT ---> in order to clear the sheet please uncomment the following code
     for row in ws.iter_rows(min_row=min_row, max_row=max_row, min_col=min_col, max_col=max_col):
         for cell in row:
             cell.value = None
-
-    for report in reports:
-        ws.append(report_to_data_list(report))
 
     wb.save(full_path)
     wb.close()
 
 
-def generate_for_specific_date_range(from_date: date, to_date: date):
-    kc = new_kite_connect_client()
+def save_all_reports(reports: List[Report], cur_row: int):
+    full_path = os.getcwd() + '/' + report_file_relative_path
+    wb = load_workbook(full_path)
+    ws = wb[sheet_name]
 
+    for report in reports:
+        data_list = report_to_data_list(report)
+
+        ws.cell(row=cur_row, column=1, value=data_list[0])
+        ws.cell(row=cur_row, column=2, value=data_list[1])
+        ws.cell(row=cur_row, column=3, value=data_list[2])
+        ws.cell(row=cur_row, column=4, value=data_list[3])
+        ws.cell(row=cur_row, column=5, value=data_list[4])
+        ws.cell(row=cur_row, column=6, value=data_list[5])
+        ws.cell(row=cur_row, column=7, value=data_list[6])
+
+        cur_row += 1
+
+    wb.save(full_path)
+    wb.close()
+
+    return cur_row
+
+
+def generate_for_specific_date_range(kc: KiteConnect, from_date: date, to_date: date, start_row: int) -> int:
     daily_candlesticks = get_daily_candlesticks(kc, from_date, to_date)
     entry_prices = get_entry_prices(kc, from_date, to_date)
 
     reports: List[Report] = generate_reports(daily_candlesticks, entry_prices, from_date, to_date)
-    save_all_reports(reports)
+    next_start_row = save_all_reports(reports, start_row)
+
+    return next_start_row
 
 
 def main():
@@ -150,8 +169,14 @@ def main():
         [date(2024, 7, 1), date(2024, 9, 9)],
     ]
 
+    clean_worksheet()
+
+    kc = new_kite_connect_client()
+
+    start_row = 2
     for date_range in date_ranges:
-        generate_for_specific_date_range(date_range[0], date_range[1])
+        next_row = generate_for_specific_date_range(kc, date_range[0], date_range[1], start_row)
+        start_row = next_row
 
 
 if __name__ == '__main__':

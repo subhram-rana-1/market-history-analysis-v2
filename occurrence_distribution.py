@@ -3,12 +3,12 @@ from typing import List
 from openpyxl import load_workbook
 
 
-report_file_relative_path = 'NIFTY_historical_analysis.xlsx'
+report_file_relative_path = 'BANKNIFTY_historical_analysis.xlsx'
 daily_fluctuation_data_sheet = 'daily_fluctuation'
 daily_fluctuation_distribution_curve_sheet_name = 'fluctuation_distribution'
 deviation_col = 7  # G
 start_row = 2
-end_row = 666
+end_row = 664
 grouping_range_width = 30
 
 
