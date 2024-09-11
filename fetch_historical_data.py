@@ -37,7 +37,7 @@ def get_daily_candlesticks(kc: KiteConnect, from_date: date, to_date: date) -> d
 
 # output candle opening price at 10 am
 # {date -> price}
-def get_entry_prices(kc: KiteConnect) -> dict:
+def get_entry_prices(kc: KiteConnect, from_date: date, to_date: date) -> dict:
     res = {}
 
     day = from_date
@@ -129,7 +129,7 @@ def generate_for_specific_date_range(from_date: date, to_date: date):
     kc = new_kite_connect_client()
 
     daily_candlesticks = get_daily_candlesticks(kc, from_date, to_date)
-    entry_prices = get_entry_prices(kc)
+    entry_prices = get_entry_prices(kc, from_date, to_date)
 
     reports: List[Report] = generate_reports(daily_candlesticks, entry_prices, from_date, to_date)
     save_all_reports(reports)
