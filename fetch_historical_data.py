@@ -10,18 +10,16 @@ from openpyxl import load_workbook
 from typing import List
 
 
-report_file_relative_path = 'NIFTY_historical_analysis.xlsx'
+report_file_relative_path = 'BANKNIFTY_historical_analysis.xlsx.xlsx'
 sheet_name = 'daily_fluctuation'
 min_row = 2
-max_row = 1000
+max_row = 10000
 min_col = 1  # A
 max_col = 7  # G
-from_date = date(2024, 7, 1)
-to_date = date(2024, 9, 9)
 
 
 # output: {date -> [low, high]}
-def get_daily_candlesticks(kc: KiteConnect) -> dict:
+def get_daily_candlesticks(kc: KiteConnect, from_date: date, to_date: date) -> dict:
     candle_stick = kc.historical_data(
         instrument_token=market_instrument_token,
         from_date=from_date,
@@ -81,7 +79,7 @@ def report_to_data_list(report: Report) -> List:
     ]
 
 
-def generate_reports(daily_candlesticks: dict, entry_prices: dict) -> List[Report]:
+def generate_reports(daily_candlesticks: dict, entry_prices: dict, from_date: date, to_date: date) -> List[Report]:
     reports = []
 
     day = from_date
@@ -116,9 +114,9 @@ def save_all_reports(reports: List[Report]):
     ws = wb[sheet_name]
 
     # IMPORTANT ---> in order to clear the sheet please uncomment the following code
-    # for row in ws.iter_rows(min_row=min_row, max_row=max_row, min_col=min_col, max_col=max_col):
-    #     for cell in row:
-    #         cell.value = None
+    for row in ws.iter_rows(min_row=min_row, max_row=max_row, min_col=min_col, max_col=max_col):
+        for cell in row:
+            cell.value = None
 
     for report in reports:
         ws.append(report_to_data_list(report))
@@ -127,14 +125,33 @@ def save_all_reports(reports: List[Report]):
     wb.close()
 
 
-def main():
+def generate_for_specific_date_range(from_date: date, to_date: date):
     kc = new_kite_connect_client()
 
-    daily_candlesticks = get_daily_candlesticks(kc)
+    daily_candlesticks = get_daily_candlesticks(kc, from_date, to_date)
     entry_prices = get_entry_prices(kc)
 
-    reports: List[Report] = generate_reports(daily_candlesticks, entry_prices)
+    reports: List[Report] = generate_reports(daily_candlesticks, entry_prices, from_date, to_date)
     save_all_reports(reports)
+
+
+def main():
+    date_ranges = [
+        [date(2022, 1, 1), date(2022, 3, 30)],
+        [date(2022, 4, 1), date(2022, 6, 30)],
+        [date(2022, 7, 1), date(2022, 9, 30)],
+        [date(2022, 10, 1), date(2022, 12, 30)],
+        [date(2023, 1, 1), date(2023, 3, 30)],
+        [date(2023, 4, 1), date(2023, 6, 30)],
+        [date(2023, 7, 1), date(2023, 9, 30)],
+        [date(2023, 10, 1), date(2023, 12, 30)],
+        [date(2024, 1, 1), date(2024, 3, 30)],
+        [date(2024, 4, 1), date(2024, 6, 30)],
+        [date(2024, 7, 1), date(2024, 9, 9)],
+    ]
+
+    for date_range in date_ranges:
+        generate_for_specific_date_range(date_range[0], date_range[1])
 
 
 if __name__ == '__main__':

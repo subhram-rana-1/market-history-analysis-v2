@@ -69,6 +69,7 @@ def convert_to_occurrence_distribution(daily_market_fluctuation: List[float]) ->
         tot_sum_so_far += count
 
         cur_percentage = round(tot_sum_so_far / tot_cumulative_occurrence * 100)
+        occurrence_distribution[my_range].append(tot_sum_so_far)
         occurrence_distribution[my_range].append(cur_percentage)
 
         start_range = end_range
@@ -97,11 +98,13 @@ def save_to_report_sheet(occurrence_distribution: dict):
     cur_row = 2
     for group_range, arr in occurrence_distribution.items():
         count = arr[0]
-        cum_percentage = arr[1]
+        cum_sum = arr[1]
+        cum_percentage = arr[2]
 
         ws.cell(row=cur_row, column=1, value=group_range)
         ws.cell(row=cur_row, column=2, value=count)
-        ws.cell(row=cur_row, column=3, value=cum_percentage)
+        ws.cell(row=cur_row, column=3, value=cum_sum)
+        ws.cell(row=cur_row, column=4, value=cum_percentage)
 
         cur_row += 1
 
