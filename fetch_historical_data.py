@@ -10,12 +10,13 @@ from openpyxl import load_workbook
 from typing import List
 
 
-report_file_relative_path = 'BANKNIFTY_historical_analysis.xlsx'
+report_file_relative_path = 'NIFTY_historical_analysis.xlsx'
 sheet_name = 'daily_fluctuation'
 min_row = 2
 max_row = 10000
 min_col = 1  # A
 max_col = 7  # G
+
 
 # output: {date -> [low, high]}
 def get_daily_candlesticks(kc: KiteConnect, from_date: date, to_date: date) -> dict:
@@ -43,13 +44,14 @@ def get_entry_prices(kc: KiteConnect, from_date: date, to_date: date) -> dict:
     while day <= to_date:
         candle_stick = kc.historical_data(
             instrument_token=market_instrument_token,
-            from_date=from_date,
-            to_date=to_date,
-            interval='5minute',
+            from_date=day,
+            to_date=day,
+            interval='15minute',
         )
 
         # pick 10 am candle
-        res[day.strftime('%Y-%m-%d')] = candle_stick[3]['open']
+        if len(candle_stick) > 0:  # If not a trade holiday
+            res[day.strftime('%Y-%m-%d')] = candle_stick[3]['open']
 
         day += timedelta(days=1)
 

@@ -3,13 +3,13 @@ from typing import List
 from openpyxl import load_workbook
 
 
-report_file_relative_path = 'BANKNIFTY_historical_analysis.xlsx'
+report_file_relative_path = 'NIFTY_historical_analysis.xlsx'
 daily_fluctuation_data_sheet = 'daily_fluctuation'
 daily_fluctuation_distribution_curve_sheet_name = 'fluctuation_distribution'
 deviation_col = 7  # G
 start_row = 2
 end_row = 664
-grouping_range_width = 30
+grouping_range_width = 50
 
 
 def fetch_daily_market_fluctuation() -> List[float]:
@@ -25,7 +25,7 @@ def fetch_daily_market_fluctuation() -> List[float]:
     return daily_market_fluctuation
 
 
-# output: {"10-20": [3, cum_occurrence], "20-30": [4, cum_occurrence]}
+# output: {"10-20": [3, cum_occurrence, cum_%age], "20-30": [4, cum_occurrence, cum_%age]}
 def convert_to_occurrence_distribution(daily_market_fluctuation: List[float]) -> dict:
     daily_market_fluctuation.sort()
     occurrence_distribution = {}
