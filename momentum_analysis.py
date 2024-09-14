@@ -3,11 +3,11 @@ from typing import List
 from openpyxl import load_workbook
 
 
-input_sheet_relative_file_path = 'NIFTY_historical_analysis.xlsx'
+input_sheet_relative_file_path = 'BANKNIFTY_historical_analysis.xlsx'
 momentum_sheet_name = 'momentum_analysis'
 momentum_col = 2
 start_row = 3
-end_row = 121
+end_row = 93
 grouping_range_width = 10
 
 
