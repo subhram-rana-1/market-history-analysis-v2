@@ -2,3 +2,5 @@ kiteconnect
 openpyxl
 numpy
 scipy
+pandas
+pandas_datareader
