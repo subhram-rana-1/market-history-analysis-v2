@@ -4,10 +4,11 @@ from scipy.stats import norm
 
 # S0 = underlying price
 # X = strike price
+# t = time to expiration
 # σ = volatility
 # r = continuously compounded risk-free interest rate
 # q = continuously compounded dividend yield
-# t = time to expiration
+
 # For,
 # σ = Volatility = India VIX has been taken.
 # r = 10% (As per NSE Website, it is fixed.)
@@ -43,3 +44,56 @@ def black_scholes_dexter(S0, X, t, σ="", r=10, q=0.0, td=365):
     put_rho = (-1 / 100) * X * t * math.exp(-r * t) * norm.cdf(-d2)
 
     return call_theta, put_theta, call_premium, put_premium, call_delta, put_delta, gamma, vega, call_rho, put_rho
+
+
+def print_option_greeks(
+        underlying_price,
+        strike_price,
+        time_to_expiration,
+        volatility,
+        risk_free_interest_rate,
+        dividend_yield,
+        td=365,
+):
+    call_theta, put_theta, call_premium, put_premium, call_delta, put_delta, gamma, vega, call_rho, put_rho = \
+        black_scholes_dexter(
+            underlying_price,
+            strike_price,
+            time_to_expiration,
+            volatility,
+            risk_free_interest_rate,
+            dividend_yield,
+            td,
+        )
+
+    print('CALL')
+    print(f'\t premium: {call_premium}')
+    print(f'\t delta: {call_delta}')
+    print(f'\t theta: {call_theta}')
+    print(f'\t rho: {call_rho}')
+
+    print('PUT')
+    print(f'\t premium: {put_premium}')
+    print(f'\t delta: {put_delta}')
+    print(f'\t theta: {put_theta}')
+    print(f'\t rho: {put_rho}')
+
+    print()
+
+    print(f'Gamma: {gamma}')
+    print(f'Vega: {vega}')
+
+
+def main():
+    print_option_greeks(
+        underlying_price=25356,
+        strike_price=25200,
+        time_to_expiration=4,
+        volatility=12.52,
+        risk_free_interest_rate=0,
+        dividend_yield=8.89,
+    )
+
+
+if __name__ == '__main__':
+    main()
