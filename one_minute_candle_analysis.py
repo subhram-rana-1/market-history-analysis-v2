@@ -15,6 +15,9 @@ unique_instrument_token = NIFTY_INSTRUMENT_TOKEN
 sheet_rel_file_path = 'one_minute_candle_analysis_report.xlsx'
 up_sheet_name = 'open-to-high'
 down_sheet_name = 'open-to-low'
+body_sheet_name = 'body'
+lower_wick_sheet_name = 'lower-wick'
+upper_wick_sheet_name = 'upper-wick'
 bucket_size = 2
 max_candle_size_for_analysis = 40
 # User input -----------------------------
@@ -65,6 +68,18 @@ class Candle:
     def down_move(self) -> float:
         return self.open - self.lo
 
+    @property
+    def body_length(self) -> float:
+        return abs(self.open - self.close)
+
+    @property
+    def upper_wick_length(self) -> float:
+        return abs(self.hi - max(self.open, self.close))
+
+    @property
+    def lower_wick_length(self) -> float:
+        return abs(self.lo - min(self.open, self.close))
+
 
 class UpstoxCandlesticksData:
     def __init__(self, candles: List[Candle]):
@@ -75,6 +90,15 @@ class UpstoxCandlesticksData:
             return [candle.up_move for candle in self.candles]
         if direction == 'down':
             return [candle.down_move for candle in self.candles]
+
+    def get_candle_body_lengths(self) -> List[float]:
+        return [candle.body_length for candle in self.candles]
+
+    def get_candle_upper_wick_lengths(self) -> List[float]:
+        return [candle.upper_wick_length for candle in self.candles]
+
+    def get_candle_lower_wick_lengths(self) -> List[float]:
+        return [candle.lower_wick_length for candle in self.candles]
 
 
 class UpstoxCandlestickResponse:
@@ -103,6 +127,30 @@ class UpstoxCandlestickResponse:
 
     def distribution_for_down_moves(self, bucket_length: int) -> dict:
         return self.distribution_for_moves('down', bucket_length)
+
+    def distribution_for_candle_body(self, bucket_length: int) -> dict:
+        candle_body_lengths = self.data.get_candle_body_lengths()
+
+        # IMPORTANT - remove too big candles, they are outliers to this analysis
+        candle_body_lengths = [x for x in candle_body_lengths if x <= max_candle_size_for_analysis]
+
+        return get_distributions(candle_body_lengths, bucket_length)
+
+    def distribution_for_candle_lower_wick(self, bucket_length: int) -> dict:
+        candle_lower_wick_lengths = self.data.get_candle_lower_wick_lengths()
+
+        # IMPORTANT - remove too big candles, they are outliers to this analysis
+        candle_lower_wick_lengths = [x for x in candle_lower_wick_lengths if x <= max_candle_size_for_analysis]
+
+        return get_distributions(candle_lower_wick_lengths, bucket_length)
+
+    def distribution_for_candle_upper_wick(self, bucket_length: int) -> dict:
+        candle_upper_wick_lengths = self.data.get_candle_upper_wick_lengths()
+
+        # IMPORTANT - remove too big candles, they are outliers to this analysis
+        candle_upper_wick_lengths = [x for x in candle_upper_wick_lengths if x <= max_candle_size_for_analysis]
+
+        return get_distributions(candle_upper_wick_lengths, bucket_length)
 
 
 def fetch_candlestick_data_from_upstox() -> UpstoxCandlestickResponse:
@@ -137,16 +185,15 @@ def main():
 
     up_move_distribution = upstox_1min_candlestick_resp.distribution_for_up_moves(bucket_size)
     down_move_distribution = upstox_1min_candlestick_resp.distribution_for_down_moves(bucket_size)
+    candle_body_distribution = upstox_1min_candlestick_resp.distribution_for_candle_body(bucket_size)
+    candle_lower_wick_distribution = upstox_1min_candlestick_resp.distribution_for_candle_lower_wick(bucket_size)
+    candle_upper_wick_distribution = upstox_1min_candlestick_resp.distribution_for_candle_upper_wick(bucket_size)
 
-    write_to_sheet(
-        up_move_distribution,
-        up_sheet_name,
-    )
-
-    write_to_sheet(
-        down_move_distribution,
-        down_sheet_name,
-    )
+    write_to_sheet(up_move_distribution, up_sheet_name)
+    write_to_sheet(down_move_distribution, down_sheet_name)
+    write_to_sheet(candle_body_distribution, body_sheet_name)
+    write_to_sheet(candle_lower_wick_distribution, lower_wick_sheet_name)
+    write_to_sheet(candle_upper_wick_distribution, upper_wick_sheet_name)
 
 
 if __name__ == '__main__':
