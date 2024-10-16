@@ -13,8 +13,8 @@ end_datetime = datetime.today()
 start_datetime = end_datetime - timedelta(days=180)
 unique_instrument_token = NIFTY_INSTRUMENT_TOKEN
 sheet_rel_file_path = 'one_minute_candle_analysis_report.xlsx'
-up_sheet_name = 'up'
-down_sheet_name = 'down'
+up_sheet_name = 'open-to-high'
+down_sheet_name = 'open-to-low'
 bucket_size = 2
 max_candle_size_for_analysis = 40
 # User input -----------------------------

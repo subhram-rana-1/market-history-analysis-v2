@@ -90,7 +90,7 @@ def get_distributions(
 
 def _clean_worksheet(ws, start_row: int, start_col: int):
     for row in range(start_row, 1000):  # Adjust range to include row 1000
-        for col in range(start_col, start_col+5):  # Columns are typically 1-indexed
+        for col in range(start_col, start_col+4):  # Columns are typically 1-indexed
             cell = ws.cell(row=row, column=col)
             cell.value = None
 
