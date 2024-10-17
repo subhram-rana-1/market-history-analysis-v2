@@ -183,25 +183,65 @@ class Candle:
     def lower_wick_length(self) -> float:
         return abs(self.lo - min(self.open, self.close))
 
+    @property
+    def is_green(self) -> bool:
+        return self.close >= self.hi
+
+    @property
+    def is_red(self) -> bool:
+        return self.close < self.hi
+
 
 class UpstoxCandlesticksData:
     def __init__(self, candles: List[Candle]):
         self.candles: List[Candle] = candles
 
     def get_moves(self, direction: str) -> List[float]:
+        moves = []
         if direction == 'up':
-            return [candle.up_move for candle in self.candles]
+            for candle in self.candles:
+                if candle.is_green:
+                    moves.append(candle.up_move)
         if direction == 'down':
-            return [candle.down_move for candle in self.candles]
+            for candle in self.candles:
+                if candle.is_red:
+                    moves.append(candle.down_move)
 
-    def get_candle_body_lengths(self) -> List[float]:
-        return [candle.body_length for candle in self.candles]
+        return moves
+
+    def get_candle_body_lengths(self, color: str) -> List[float]:
+        body_lengths = []
+
+        if color == 'green':
+            for candle in self.candles:
+                if candle.is_green:
+                    body_lengths.append(candle.body_length)
+        elif color == 'red':
+            for candle in self.candles:
+                if candle.is_red:
+                    body_lengths.append(candle.body_length)
+        else:
+            raise Exception(f'invalid candle color: {color}')
+
+        return body_lengths
 
     def get_candle_upper_wick_lengths(self) -> List[float]:
-        return [candle.upper_wick_length for candle in self.candles]
+        """ get upper_wick_lengths only in case of RED candles"""
+        upper_wick_lengths = []
+        for candle in self.candles:
+            if candle.is_red:
+                upper_wick_lengths.append(candle.upper_wick_length)
+
+        return upper_wick_lengths
 
     def get_candle_lower_wick_lengths(self) -> List[float]:
-        return [candle.lower_wick_length for candle in self.candles]
+        """ get lower_wick_lengths only in case of GREEN candles"""
+        lower_wick_lengths = []
+        for candle in self.candles:
+            if candle.is_green:
+                lower_wick_lengths.append(candle.lower_wick_length)
+
+        return lower_wick_lengths
 
 
 class UpstoxCandlestickResponse:
@@ -235,8 +275,8 @@ class UpstoxCandlestickResponse:
         return self.distribution_for_moves('down', bucket_length, max_candle_size_for_analysis)
 
     def distribution_for_candle_body(self, bucket_length: int,
-                                     max_candle_size_for_analysis: float) -> dict:
-        candle_body_lengths = self.data.get_candle_body_lengths()
+                                     max_candle_size_for_analysis: float, color: str) -> dict:
+        candle_body_lengths = self.data.get_candle_body_lengths(color)
 
         # IMPORTANT - remove too big candles, they are outliers to this analysis
         candle_body_lengths = [x for x in candle_body_lengths if x <= max_candle_size_for_analysis]

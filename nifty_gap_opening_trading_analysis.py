@@ -351,12 +351,12 @@ if __name__ == '__main__':
     # ))
 
     # most optimised one as per "tot_gain"
-    # main(TradeConfig(
-    #     gap_threshold=30,
-    #     fixed_sl_points=40,
-    #     target_type='fixed',
-    #     fixed_target_points=65,
-    # ))
+    main(TradeConfig(
+        gap_threshold=70,
+        fixed_sl_points=40,
+        target_type='fixed',
+        fixed_target_points=80,
+    ))
 
     optimised_trade_config: TradeConfig = optimization()
     print(optimised_trade_config.__dict__)
